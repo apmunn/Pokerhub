@@ -50,13 +50,38 @@ function normalize(raw){
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]))}
 function getStore(){let d=defaults();try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)return normalize(s);const legacy=JSON.parse(localStorage.getItem(OLD)||'null');if(legacy&&typeof legacy==='object'){d.name=String(legacy.name||'Player');d.wallet=Number(legacy.chips)||2500;d.xp=Number(legacy.xp)||0;d.wins=Number(legacy.wins)||0;d.handsPlayed=Number(legacy.played)||0;d.completed=Array.isArray(legacy.completed)?legacy.completed:[];return normalize(d)}}catch{}return d}
 let state=getStore(),page='home',table=null,lessonSelected=0,lessonAnswer=null,topicSelected=0,dailyAnswer=null;
+
+const CENTER_KEY='pokerhub-portal-v3';
+function loadCenter(){
+ const fallback={bio:'Learning one hand at a time.',avatar:'♠',visibility:'private',accent:state.theme,reducedMotion:false,notifications:true,activity:[],friends:[],clubs:[]};
+ let stored={};try{stored=JSON.parse(localStorage.getItem(CENTER_KEY)||'{}')}catch{}
+ if(!stored||typeof stored!=='object'||Array.isArray(stored))stored={};
+ return {...fallback,bio:typeof stored.bio==='string'?stored.bio.slice(0,180):fallback.bio,
+ avatar:['♠','♥','♦','♣','★','✦'].includes(stored.avatar)?stored.avatar:'♠',
+ visibility:['private','friends','public'].includes(stored.visibility)?stored.visibility:'private',
+ accent:['green','purple','blue','amber'].includes(stored.accent)?stored.accent:state.theme,
+ reducedMotion:stored.reducedMotion===true,notifications:stored.notifications!==false,
+ activity:(Array.isArray(stored.activity)?stored.activity:[]).slice(0,40).filter(a=>a&&typeof a==='object').map((a,i)=>({id:Number(a.id)||i,text:String(a.text||'Update').slice(0,200),date:String(a.date||'').slice(0,60),read:!!a.read})),
+ friends:(Array.isArray(stored.friends)?stored.friends:[]).filter(x=>typeof x==='string').map(x=>x.slice(0,30)).slice(0,30),
+ clubs:(Array.isArray(stored.clubs)?stored.clubs:[]).filter(x=>typeof x==='string').map(x=>x.slice(0,40)).slice(0,15)};
+}
+let center=loadCenter(),liveVariant='holdem';
+state.partners=[...new Set([...state.partners,...center.friends])].slice(0,30);
+state.clubs=[...new Set([...state.clubs,...center.clubs])].slice(0,15);
+function saveCenter(){center.friends=state.partners.slice();center.clubs=state.clubs.slice();center.accent=state.theme;try{localStorage.setItem(CENTER_KEY,JSON.stringify(center))}catch(e){console.warn('Could not save player center',e)}}
+function addNotice(message){
+ if(!center.notifications)return;
+ center.activity.unshift({id:Date.now()+Math.random(),text:String(message).slice(0,200),date:new Date().toLocaleString(),read:false});
+ center.activity=center.activity.slice(0,40);saveCenter();
+}
+
 let lab={hole:[],board:[],focus:'hole',result:null,working:false},calc={pot:80,call:20},toastTimer=null,profileTab='overview';
-const icon={home:'⌂',play:'♠',academy:'▤',challenges:'✧',lab:'◇',coach:'✦',ranked:'★',tournaments:'♛',community:'♧',profile:'◉'};
-const items=[['home','Dashboard'],['play','Play Poker'],['academy','Academy'],['challenges','Challenges'],['lab','Hand Lab'],['coach','Coach'],['ranked','Rankings'],['tournaments','Tournaments'],['community','Friends & Clubs'],['profile','Profile']];
+const icon={home:'⌂',play:'♠',live:'♣',variants:'♦',academy:'▤',challenges:'✧',lab:'◇',coach:'✦',ranked:'★',tournaments:'♛',community:'♧',profile:'◉',notifications:'♢',settings:'⚙'};
+const items=[['home','Dashboard'],['play','Solo Poker'],['live','Live Multiplayer'],['variants','Poker Variants'],['academy','Academy'],['challenges','Challenges'],['lab','Hand Lab'],['coach','Coach'],['ranked','Rankings'],['tournaments','Tournaments'],['community','Friends & Clubs'],['profile','Profile'],['notifications','Notifications'],['settings','Settings']];
 const words={win:'WIN',loss:'LOSS',tie:'SPLIT'};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn('Could not save locally',e)}}
 function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.hidden=true,3100)}
-function achievement(id){if(!state.achievements.includes(id)){state.achievements.push(id);setTimeout(()=>toast('Achievement unlocked: '+(D.achievements.find(a=>a.id===id)||{name:id}).name),200)}}
+function achievement(id){if(!state.achievements.includes(id)){state.achievements.push(id);const label=(D.achievements.find(a=>a.id===id)||{name:id}).name;addNotice('Achievement unlocked: '+label);setTimeout(()=>toast('Achievement unlocked: '+label),200)}}
 function xp(n){state.xp=Math.max(0,Number(state.xp||0)+n);save()}
 function rank(){let r=D.ranks[0];for(let v of D.ranks)if(state.xp>=v.min)r=v;return r}
 function nextRank(){return D.ranks.find(r=>r.min>state.xp)}
@@ -70,18 +95,73 @@ function button(text,act,klass){let cl=klass||'';return '<button type="button" c
 function lead(k,h,p){return '<div class="eyebrow">'+k+'</div><h1>'+h+'</h1><p class="pageLead">'+p+'</p>'}
 function progressBar(p){return '<div class="progress"><div style="width:'+Math.max(0,Math.min(100,p))+'%"></div></div>'}
 function nav(){
- $('#navigation').innerHTML='<div class="navLabel">EXPLORE</div><div class="nav">'+items.map(([id,name])=>'<button type="button" data-nav="'+id+'" class="'+(page===id?'active':'')+'" title="'+name+'" aria-current="'+(page===id?'page':'false')+'"><span style="font-size:19px;width:21px;text-align:center">'+icon[id]+'</span><span class="text">'+name+'</span></button>').join('')+'</div>';
+ const navButton=([id,name])=>'<button type="button" data-nav="'+id+'" class="'+(page===id?'active':'')+'" title="'+name+'" aria-current="'+(page===id?'page':'false')+'"><span style="font-size:19px;width:21px;text-align:center">'+icon[id]+'</span><span class="text">'+name+'</span></button>';
+ $('#navigation').innerHTML='<div class="navLabel">PLAY & LEARN</div><div class="nav">'+items.filter(([id])=>!['community','profile','notifications','settings'].includes(id)).map(navButton).join('')+'</div><div class="navLabel">YOUR SPACE</div><div class="nav">'+items.filter(([id])=>['community','profile','notifications','settings'].includes(id)).map(navButton).join('')+'</div>';
  $('#playerMini').innerHTML='<button class="miniProfile" data-nav="profile"><span class="avatar">'+esc((state.name||'P')[0].toUpperCase())+'</span><span class="info"><strong>'+esc(state.name)+'</strong><br><span class="muted small">'+rank().name+' · Level '+level()+'</span></span></button><div class="sideLegal info">Free play chips · No purchases or cash value</div>';
  $('#chipBalance').textContent=Number(state.wallet||0).toLocaleString()+' chips';
  $('#topRank').textContent=rank().name;
  document.body.className=state.theme==='green'?'':'theme-'+(['purple','blue','amber'].includes(state.theme)?state.theme:'green');
 }
-function go(p){if(!items.some(i=>i[0]===p))p='home';page=p;if(location.hash.slice(1)!==p)location.hash=p;render();window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
-function render(){nav();let views={home,play,academy,challenges,handLab,lab:handLab,coach,ranked,tournaments,community,profile};let v=views[page]||home;$('#content').innerHTML='<div class="animateIn">'+v()+'</div>';document.title=(items.find(i=>i[0]===page)||['','PokerHub'])[1]+' · PokerHub'}
+function go(p){if(!items.some(i=>i[0]===p))p='home';if(page==='live'&&p!=='live'){if(!window.PH_LIVE?.beforeLeave())return;window.PH_LIVE?.unmount()}page=p;if(location.hash.slice(1)!==p)location.hash=p;render();window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
+function render(){nav();let views={home,play,live,variants,academy,challenges,handLab,lab:handLab,coach,ranked,tournaments,community,profile,notifications,settings};let v=views[page]||home;if(page==='live'){if(!$('#live-root'))$('#content').innerHTML='<div class="animateIn">'+live()+'</div>';window.PH_LIVE?.mount($('#live-root'),liveVariant,{name:state.name})}else $('#content').innerHTML='<div class="animateIn">'+v()+'</div>';document.title=(items.find(i=>i[0]===page)||['','PokerHub'])[1]+' · PokerHub'}
+
+/* Unified public sections: all activities live in index.html. */
+function live(){return '<section id="live-root" aria-label="Live multiplayer poker"><p class="muted">Opening live rooms…</p></section>'}
+function openVariant(v){if(!['holdem','omaha','omaha5'].includes(v))v='holdem';liveVariant=v;window.PH_LIVE?.setVariant(v);go('live')}
+function variants(){
+ const playable=[
+  ['holdem','♠','Texas Hold’em','Two private cards each and five shared cards. Make your best five-card hand from any combination.'],
+  ['omaha','♣','Omaha','Four private cards each. Your final hand must use exactly two private and three shared cards.'],
+  ['omaha5','♦','Five-Card Omaha','Five private cards each. Your final hand must use exactly two private and three shared cards.']
+ ];
+ const guides=[
+  ['Five-Card Draw','Five private cards per player. Exchange some cards during the draw.'],
+  ['Seven-Card Stud','A mix of face-up and face-down cards, without a shared board.'],
+  ['Razz','A stud variant where the lowest five-card hand wins.'],
+  ['Omaha Hi-Lo','The pot can be divided between qualifying high and low hands.'],
+  ['Short Deck','A 36-card Hold’em-style deck with ranks 2–5 removed. Rankings can differ.'],
+  ['2–7 Triple Draw','A lowball draw variant with three drawing rounds.']
+ ];
+ return lead('LEARN THE FORMATS','Poker Variants','Explore popular formats and select a live practice table. The three playable modes use simplified fixed-size raises and free fictional chips.')+
+ '<div class="grid cols3 ph-variant-grid">'+playable.map(([id,icon,name,desc])=>'<section class="panel ph-variant-card"><span class="tag">PLAYABLE · 2–6 FRIENDS</span><div class="ph-variant-symbol">'+icon+'</div><h2>'+name+'</h2><p class="muted small">'+desc+'</p><div class="actions">'+button('Play '+name+' →','App.openVariant(\''+id+'\')')+'</div></section>').join('')+'</div>'+
+ panel('Explore more rules','<div class="grid cols3">'+guides.map(([name,desc])=>'<article class="featureCard"><span class="tag mutedTag">LEARNING GUIDE</span><h3>'+name+'</h3><p>'+desc+'</p></article>').join('')+'</div><p class="muted tiny">These additional formats are informational only; they cannot be played online yet.</p>');
+}
+function notifications(){
+ return lead('YOUR LOCAL ACTIVITY','Notifications','A private log of your learning achievements and profile updates on this browser. This is not an online messaging system.')+
+ panel('Recent activity','<div class="actions">'+button('Mark all read','App.markNoticesRead()','secondary sm')+button('Clear notifications','App.clearNotices()','ghost sm')+'</div>'+
+ (center.activity.length?center.activity.map(n=>'<div class="listRow"><div><span class="tag '+(n.read?'mutedTag':'')+'">'+(n.read?'READ':'NEW')+'</span> <strong>'+esc(n.text)+'</strong><p class="muted tiny" style="margin:5px 0">'+esc(n.date)+'</p></div></div>').join(''):'<div class="empty">Nothing here yet. Try completing a lesson or updating your profile.</div>'));
+}
+function markNoticesRead(){center.activity.forEach(n=>n.read=true);saveCenter();render();toast('Marked as read')}
+function clearNotices(){center.activity=[];saveCenter();render();toast('Local notifications cleared')}
+function settings(){
+ return lead('ONE PLACE FOR YOUR PREFERENCES','Settings','Customize PokerHub and your local player profile. Your settings apply to this browser, not an online account.')+
+ '<div class="split"><div class="stack">'+panel('Appearance & accessibility',
+ '<label class="field">Accent theme<select id="settingsTheme">'+[['green','Classic green'],['purple','Royal purple'],['blue','Ocean blue'],['amber','Warm amber']].map(([v,n])=>'<option value="'+v+'" '+(state.theme===v?'selected':'')+'>'+n+'</option>').join('')+'</select></label>'+
+ '<label class="row ph-setting-check"><input type="checkbox" id="settingsMotion" '+(center.reducedMotion?'checked':'')+'> Reduce animations</label>'+
+ '<label class="row ph-setting-check"><input type="checkbox" id="settingsNotify" '+(center.notifications?'checked':'')+'> Save local achievement notifications</label>')+
+ panel('Player identity','<label class="field">Bio<textarea id="settingsBio" maxlength="180" rows="3">'+esc(center.bio)+'</textarea></label>'+
+ '<label class="field">Avatar symbol<select id="settingsAvatar">'+['♠','♥','♦','♣','★','✦'].map(a=>'<option '+(center.avatar===a?'selected':'')+'>'+a+'</option>').join('')+'</select></label>'+
+ '<p class="muted small">Display name and progress backups are available in your <a href="#profile">Profile</a>.</p>'+
+ '<div class="actions">'+button('Save all settings','App.saveSettings()')+'</div>')+'</div>'+
+ '<div class="stack">'+panel('Privacy & progress','<p class="muted small">Your progress, friends list and profile settings are saved locally in your browser. Multiplayer rooms are temporary. There are no account passwords or online direct messages.</p>'+
+ '<div class="actions">'+button('Open profile','App.go(\'profile\')','secondary')+button('Learning history','App.go(\'profile\')','ghost')+'</div><p class="muted small"><a href="privacy.html">Privacy policy</a> · <a href="terms.html">Terms of use</a></p>')+
+ panel('Your connected experience','<div class="listRow"><span>Solo practice</span><span class="tag">On this browser</span></div><div class="listRow"><span>Live rooms</span><span class="tag">Temporary online</span></div><div class="listRow"><span>Online accounts</span><span class="tag mutedTag">Not yet available</span></div><div class="listRow"><span>Virtual chips</span><span class="tag">Free only</span></div>')+'</div></div>';
+}
+function saveSettings(){
+ const theme=$('#settingsTheme').value;
+ state.theme=['green','purple','blue','amber'].includes(theme)?theme:'green';
+ center.bio=$('#settingsBio').value.trim().slice(0,180);
+ center.avatar=$('#settingsAvatar').value;
+ center.reducedMotion=$('#settingsMotion').checked;
+ center.notifications=$('#settingsNotify').checked;
+ save();saveCenter();applyCenterSettings();addNotice('Player Center settings updated.');render();toast('Settings saved');
+}
+function applyCenterSettings(){document.documentElement.classList.toggle('reduce-motion',center.reducedMotion)}
+
 function home(){
  let next=nextRank(),count=state.completed.length,rate=state.handsPlayed?Math.round(state.wins/state.handsPlayed*100):0;
  let today=state.daily.includes(dateKey());
- return '<section class="hero"><div class="eyebrow">♠ WELCOME TO POKERHUB</div><h1>Play the hand.<br>Learn the game.</h1><p>A complete, free poker learning playground. Practice at a real turn-based table, explore interactive lessons, and track your improvement—without betting real money.</p><div class="actions">'+button('♠ Play a hand →','App.startPractice()')+button('Explore Academy','App.go(\'academy\')','secondary')+'</div></section>'+
+ return '<section class="hero"><div class="eyebrow">♠ ONE CONNECTED POKERHUB</div><h1>Play the hand.<br>Learn the game.</h1><p>Your home for free solo poker, private multiplayer rooms, poker variations, interactive lessons, and one local learning profile. No real-money betting.</p><div class="actions">'+button('♠ Play a hand →','App.startPractice()')+button('Play with friends →','App.go(\'live\')','secondary')+button('Explore Academy','App.go(\'academy\')','ghost')+'</div></section>'+
  '<div class="grid cols4" style="margin-bottom:17px">'+
  '<section class="panel kpi"><div class="panelLabel">Learning Rank</div><div class="statValue accentText">'+rank().icon+' '+rank().name+'</div><span class="muted small">Level '+level()+'</span></section>'+
  '<section class="panel kpi"><div class="panelLabel">Total XP</div><div class="statValue">'+state.xp.toLocaleString()+'</div>'+progressBar(next?state.xp/next.min*100:100)+'</section>'+
@@ -232,10 +312,10 @@ function community(){
  '<div class="stack">'+panel('Community roadmap','<div class="listRow"><span>✓ Local learning profile</span><span class="tag">Available</span></div><div class="listRow"><span>✓ Personal study lists</span><span class="tag">Available</span></div><div class="listRow"><span>Shared online friend requests</span><span class="tag mutedTag">Needs backend</span></div><div class="listRow"><span>Real-time multiplayer tables</span><span class="tag mutedTag">Needs backend</span></div><div class="listRow"><span>Online club messaging</span><span class="tag mutedTag">Needs backend</span></div><div class="listRow"><span>Global leaderboards</span><span class="tag mutedTag">Needs backend</span></div>')+
  panel('Share PokerHub','<p class="muted small">Share the educational site address from the current host. Each visitor’s learning progress is stored in their own browser.</p>'+button('Copy current website address','App.copyLink()','secondary'))+'</div></div>';
 }
-function addPartner(){const e=$('#newPartner'),name=e.value.trim().slice(0,30);if(!name){toast('Enter a nickname.');return}if(state.partners.length>=30){toast('Maximum 30 local partners.');return}if(!state.partners.includes(name))state.partners.push(name);save();render();toast('Nickname saved locally')}
-function removePartner(i){state.partners.splice(i,1);save();render()}
-function addClub(){const e=$('#newClub'),name=e.value.trim().slice(0,40);if(!name){toast('Enter a club name.');return}if(state.clubs.length>=15){toast('Maximum 15 local clubs.');return}if(!state.clubs.includes(name))state.clubs.push(name);save();render();toast('Study club saved locally')}
-function removeClub(i){state.clubs.splice(i,1);save();render()}
+function addPartner(){const e=$('#newPartner'),name=e.value.trim().slice(0,30);if(!name){toast('Enter a nickname.');return}if(state.partners.length>=30){toast('Maximum 30 local partners.');return}if(!state.partners.includes(name))state.partners.push(name);saveCenter();save();render();toast('Nickname saved locally')}
+function removePartner(i){state.partners.splice(i,1);saveCenter();save();render()}
+function addClub(){const e=$('#newClub'),name=e.value.trim().slice(0,40);if(!name){toast('Enter a club name.');return}if(state.clubs.length>=15){toast('Maximum 15 local clubs.');return}if(!state.clubs.includes(name))state.clubs.push(name);saveCenter();save();render();toast('Study club saved locally')}
+function removeClub(i){state.clubs.splice(i,1);saveCenter();save();render()}
 function copyLink(){if(location.protocol==='file:'){toast('Open the published website before copying a public link.');return}const url=new URL('./',location.href).href;if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(url).then(()=>toast('Current site address copied'),()=>toast(url));else toast(url)}
 function profile(){
  const recent=state.history.slice(0,12);
@@ -243,9 +323,9 @@ function profile(){
  '<div class="grid cols3" style="margin-bottom:17px">'+panel('Profile','<div class="row"><span class="avatar" style="width:50px;height:50px;font-size:22px">'+esc(state.name[0]||'P').toUpperCase()+'</span><div><h3 style="margin-bottom:0">'+esc(state.name)+'</h3><span class="muted small">'+rank().name+' · Level '+level()+'</span></div></div>')+panel('Hands played','<div class="statValue">'+state.handsPlayed+'</div><span class="muted small">'+state.wins+' wins · '+state.losses+' losses · '+state.ties+' ties</span>')+panel('Learning progress','<div class="statValue">'+state.completed.length+' / '+D.lessons.length+'</div>'+progressBar(100*state.completed.length/D.lessons.length))+'</div>'+
  '<div class="split"><div class="stack">'+panel('Account preferences','<label class="field">Display name<input id="displayName" maxlength="25" value="'+esc(state.name)+'"></label><div class="field" style="margin-top:15px">Accent theme<select id="themeSelect"><option value="green" '+(state.theme==='green'?'selected':'')+'>Classic green</option><option value="purple" '+(state.theme==='purple'?'selected':'')+'>Royal purple</option><option value="blue" '+(state.theme==='blue'?'selected':'')+'>Ocean blue</option><option value="amber" '+(state.theme==='amber'?'selected':'')+'>Warm amber</option></select></div><div class="actions" style="margin-top:17px">'+button('Save preferences','App.saveProfile()')+button('Download backup','App.exportProgress()','secondary')+'</div><div class="divider"></div><label class="field">Restore backup JSON<input type="file" id="restoreInput" accept=".json,application/json" onchange="App.importProgress(event)"></label><p class="muted tiny" style="margin-top:11px">This site has no login server. Progress is only on this device and browser unless you download a backup.</p><div class="actions">'+button('Get 500 free chips','App.refill()','secondary sm')+button('Reset progress…','App.resetProgress()','danger sm')+'</div>')+
  panel('Recent hand history',recent.length?recent.map(h=>'<div class="listRow"><div><span class="tag '+(h.result==='win'?'':'mutedTag')+'">'+esc(words[h.result]||h.result)+'</span><strong style="margin-left:6px">'+esc(h.mode==='tournament'?'Solo Cup':'Practice')+'</strong><div class="muted tiny" style="margin-top:5px">'+esc(h.date)+' · You: '+esc(h.hero.join(' '))+' · Pot '+h.pot+'</div></div><span class="muted tiny">'+(h.why==='showdown'?'Showdown':'Fold')+'</span></div>').join(''):'<div class="empty">Your hand history will appear here after your first game.</div>')+'</div>'+
- '<div class="stack">'+panel('Achievements','<div class="stack">'+D.achievements.map(a=>'<div class="rankMark '+(state.achievements.includes(a.id)?'current':'')+'"><span class="rankIcon">'+a.icon+'</span><div style="flex:1"><strong>'+esc(a.name)+'</strong><div class="muted tiny">'+esc(a.desc)+'</div></div><span class="tag '+(state.achievements.includes(a.id)?'':'mutedTag')+'">'+(state.achievements.includes(a.id)?'✓ Unlocked':'Locked')+'</span></div>').join('')+'</div>')+'</div></div>';
+ '<div class="stack">'+panel('Achievements','<div class="stack">'+D.achievements.map(a=>'<div class="rankMark '+(state.achievements.includes(a.id)?'current':'')+'"><span class="rankIcon">'+a.icon+'</span><div style="flex:1"><strong>'+esc(a.name)+'</strong><div class="muted tiny">'+esc(a.desc)+'</div></div><span class="tag '+(state.achievements.includes(a.id)?'':'mutedTag')+'">'+(state.achievements.includes(a.id)?'✓ Unlocked':'Locked')+'</span></div>').join('')+'</div>')+'</div></div>'+panel('Your Player Center','<div class="row"><span class="avatar ph-profile-avatar">'+esc(center.avatar)+'</span><div><strong>'+esc(state.name)+'</strong><p class="muted small">'+esc(center.bio)+'</p></div></div><div class="actions">'+button('Edit player settings →','App.go(\'settings\')','secondary')+button('Your notifications','App.go(\'notifications\')','ghost')+'</div>');
 }
-function saveProfile(){let name=$('#displayName').value.trim(),th=$('#themeSelect').value;if(!name){toast('Name cannot be empty.');return}state.name=name.slice(0,25);state.theme=['green','purple','blue','amber'].includes(th)?th:'green';save();render();toast('Preferences saved')}
+function saveProfile(){let name=$('#displayName').value.trim(),th=$('#themeSelect').value;if(!name){toast('Name cannot be empty.');return}state.name=name.slice(0,25);state.theme=['green','purple','blue','amber'].includes(th)?th:'green';save();saveCenter();addNotice('Profile preferences updated.');render();toast('Preferences saved')}
 function refill(){state.wallet+=500;save();render();toast('Added 500 free virtual chips')}
 function exportProgress(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pokerhub-progress-'+dateKey()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Downloaded local progress backup')}
 function importProgress(e){
@@ -253,9 +333,9 @@ function importProgress(e){
  const reader=new FileReader();reader.onload=()=>{try{let obj=JSON.parse(String(reader.result));if(!obj||typeof obj!=='object'||Array.isArray(obj)||typeof obj.name!=='string'||!Array.isArray(obj.completed))throw Error('Invalid backup');if(table)table.destroy();state=normalize(obj);state.activeGame=null;if(state.tour.status==='playing')state.tour.status='idle';table=null;save();render();toast('Progress restored from backup')}catch(err){toast('Could not read that PokerHub backup.')}};reader.readAsText(file);
 }
 function resetProgress(){if(!confirm('Permanently reset all PokerHub progress stored in this browser?'))return;if(table)table.destroy();state=defaults();table=null;lessonAnswer=null;dailyAnswer=null;save();go('home');toast('Local progress reset')}
-const API={go,startPractice,startTour,nextTour,gameAct,openLesson,answerLesson,answerDaily,retryDaily,labFocus,labClear,labPick,labEstimate,chooseTopic,calcOdds,addPartner,removePartner,addClub,removeClub,copyLink,saveProfile,refill,exportProgress,importProgress,resetProgress};
+const API={go,openVariant,saveSettings,markNoticesRead,clearNotices,startPractice,startTour,nextTour,gameAct,openLesson,answerLesson,answerDaily,retryDaily,labFocus,labClear,labPick,labEstimate,chooseTopic,calcOdds,addPartner,removePartner,addClub,removeClub,copyLink,saveProfile,refill,exportProgress,importProgress,resetProgress};
 window.App=API;
 document.addEventListener('click',e=>{let b=e.target.closest('[data-nav]');if(b){go(b.getAttribute('data-nav'));return}});
-window.addEventListener('hashchange',()=>{let p=location.hash.substring(1);if(items.some(i=>i[0]===p)&&p!==page){page=p;render()}});
-restore();let hash=location.hash.substring(1);if(items.some(i=>i[0]===hash))page=hash;render();
+window.addEventListener('hashchange',()=>{let p=location.hash.substring(1);if(items.some(i=>i[0]===p)&&p!==page){if(page==='live'&&p!=='live'){if(!window.PH_LIVE?.beforeLeave()){location.hash='live';return}window.PH_LIVE?.unmount()}page=p;render()}});
+applyCenterSettings();restore();let hash=location.hash.substring(1);if(items.some(i=>i[0]===hash))page=hash;render();
 })();
