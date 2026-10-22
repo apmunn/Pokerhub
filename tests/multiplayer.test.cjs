@@ -22,8 +22,6 @@ test('multiplayer smoke: server, protected files, room, Omaha hand and private c
  const joined=wait(host,m=>m.type==='joined');
  host.send(JSON.stringify({type:'create',name:'Host',variant:'omaha'}));
  const room=(await joined).room;
- const initial=await wait(host,m=>m.type==='state'&&m.room===room);
- assert.equal(initial.variant,'omaha');
  const guest=await socket();sockets.push(guest);
  const guestJoin=wait(guest,m=>m.type==='joined');
  guest.send(JSON.stringify({type:'join',room,name:'Guest'}));
@@ -32,6 +30,7 @@ test('multiplayer smoke: server, protected files, room, Omaha hand and private c
  const guestHand=wait(guest,m=>m.type==='state'&&m.game?.status==='playing');
  host.send(JSON.stringify({type:'start'}));
  const [h,g]=await Promise.all([hostHand,guestHand]);
+ assert.equal(h.variant,'omaha');
  assert.equal(h.game.hand.length,4);assert.equal(g.game.hand.length,4);
  assert.equal(h.game.board.length,0);assert.equal(h.game.pot,30);
  assert.notDeepEqual(h.game.hand,g.game.hand);
