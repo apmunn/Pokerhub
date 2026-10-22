@@ -51,3 +51,17 @@ This is a **complete standalone solo-practice prototype**, not a production mult
 The computer opponent is intentionally simple, and betting logic is simplified compared with a fully audited tournament poker engine. The equity tool is a Monte Carlo approximation, not a guarantee.
 
 Progress is stored in browser `localStorage`. Download a JSON backup from **Profile** before clearing browser data or switching devices. The app is educational and uses play chips only.
+
+## Online multiplayer (two-player beta)
+
+PokerHub now includes `multiplayer.html` and a Node.js WebSocket server in `server.cjs`. The server creates six-character private room codes, deals hidden cards separately to each player, validates turns and actions, advances the board, compares showdown hands, and distributes fictional chips. It supports reconnection in the same browser session while the server remains running.
+
+### Start locally or in StackBlitz
+
+Run `npm install` then `npm start`. Visit `http://localhost:3000/multiplayer.html` in two browser tabs or devices connected to the running server. The preview's WebSocket endpoint is `/ws`.
+
+### Deploy online
+
+The repository contains `render.yaml` for a Node.js web service. In Render, connect the GitHub repository and deploy the blueprint or create a Node web service with build command `npm install` and start command `npm start`. After deployment, use `https://YOUR-SERVICE-HOST/multiplayer.html` and share the invite link with a friend. Hosting provider pricing, availability, and sleep behavior may vary. A GitHub Pages-only site cannot run the multiplayer server; use the deployed Node.js URL instead.
+
+**Beta limitations:** Rooms are two-player only. There is no authentication, public matchmaking, persistent online balances, chat, or robust disconnect/time-out handling. A disconnected player can pause the game; a server restart resets rooms. Bets are simplified to check, call, fold, or fixed 20-chip raises; there is no all-in or side-pot support in multiplayer yet. This is an early multiplayer prototype and has not been independently browser-tested. Use only free virtual chips.
