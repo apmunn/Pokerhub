@@ -65,3 +65,13 @@ Run `npm install` then `npm start`. Visit `http://localhost:3000/multiplayer.htm
 The repository contains `render.yaml` for a Node.js web service. In Render, connect the GitHub repository and deploy the blueprint or create a Node web service with build command `npm install` and start command `npm start`. After deployment, use `https://YOUR-SERVICE-HOST/multiplayer.html` and share the invite link with a friend. Hosting provider pricing, availability, and sleep behavior may vary. A GitHub Pages-only site cannot run the multiplayer server; use the deployed Node.js URL instead.
 
 **Beta limitations:** Rooms are two-player only. There is no authentication, public matchmaking, persistent online balances, chat, or robust disconnect/time-out handling. A disconnected player can pause the game; a server restart resets rooms. Bets are simplified to check, call, fold, or fixed 20-chip raises; there is no all-in or side-pot support in multiplayer yet. This is an early multiplayer prototype and has not been independently browser-tested. Use only free virtual chips.
+
+## PokerHub 3.0 Player Center
+
+Open `portal.html` for the new responsive Player Center. It adds a dashboard, local profile customization (nickname, avatar, bio), saved friend and club names, local notifications, local learning rankings, preferences, data export/deletion, a help center, privacy and terms pages, and a custom 404 page. The original `index.html` links to Player Center and the multiplayer beta. Existing solo play and lessons remain available.
+
+**Feature status:** These Player Center features use browser localStorage and work without an account backend. They are not secure sign-ups or live social accounts. Real authentication, email verification, password resets, real friend requests, online messaging, global rankings, cross-device sync, moderation, and push notifications require a backend and further security review. The privacy and terms pages are initial project drafts and need review before public production use.
+
+### Preview
+
+With Node.js installed, run `npm install && npm start`, then open `http://localhost:3000/portal.html`. Static GitHub Pages can display Player Center, but not run the multiplayer WebSocket server.
