@@ -1,23 +1,35 @@
-/* PokerHub motion system — subtle, accessible, performant */
-:root{--motion-ease:cubic-bezier(.22,1,.36,1)}
-@keyframes ph-enter{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
-@keyframes ph-scale{from{opacity:0;transform:translateY(9px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes ph-glow{0%,100%{box-shadow:0 0 0 0 rgba(145,214,154,0)}50%{box-shadow:0 0 0 5px rgba(145,214,154,.08)}}
-@keyframes ph-shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
-#content>.hero,#content>.pageHead,#content>.grid,#content>.split,#content>.stack,#content>.section,#portal-view>.portal-hero,#portal-view>.portal-grid,#portal-view>.portal-card,#portal-view>h1,#portal-view>.portal-eyebrow{animation:ph-enter .48s var(--motion-ease) both}
-#content .panel,#content .card,#portal-view .portal-card{animation:ph-scale .44s var(--motion-ease) both}
-#content .panel:nth-child(2),#content .card:nth-child(2),#portal-view .portal-card:nth-child(2){animation-delay:55ms}
-#content .panel:nth-child(3),#content .card:nth-child(3),#portal-view .portal-card:nth-child(3){animation-delay:95ms}
-button,.btn,.portal-btn,.portal-pill,.side nav a,.portal-side nav a,.navItem{transition:transform .2s var(--motion-ease),background-color .2s ease,border-color .2s ease,box-shadow .25s ease,filter .2s ease}
-button:not(:disabled):hover,.btn:hover,.portal-btn:hover,.portal-pill:hover{transform:translateY(-2px)}
-button:not(:disabled):active,.btn:active,.portal-btn:active{transform:translateY(0) scale(.975)}
-.portal-card,.panel,.card{transition:border-color .24s ease,box-shadow .3s ease,transform .28s var(--motion-ease)}
-.portal-card:hover,.panel:hover,.card:hover{border-color:rgba(145,214,154,.45);box-shadow:0 10px 35px rgba(0,0,0,.14)}
-.portal-hero{position:relative;overflow:hidden}
-.portal-hero:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.035) 50%,transparent 70%);background-size:220% 100%;animation:ph-shimmer 9s linear infinite}
-.portal-avatar,.brandMark{animation:ph-glow 5s ease-in-out infinite}
-input,textarea,select{transition:border-color .2s ease,box-shadow .2s ease}
-input:focus-visible,textarea:focus-visible,select:focus-visible{border-color:#91d69a;box-shadow:0 0 0 3px rgba(145,214,154,.15)}
-@media(hover:none){.portal-card:hover,.panel:hover,.card:hover{box-shadow:none}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
-html.reduce-motion *,html.reduce-motion *::before,html.reduce-motion *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+/* PokerHub: calm motion design. No looping flashes; respects accessibility settings. */
+:root{--ph-ease:cubic-bezier(.22,1,.36,1);--ph-fast:170ms;--ph-medium:280ms}
+@keyframes ph-page-in{from{opacity:.35;transform:translate3d(0,10px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+@keyframes ph-card-in{from{opacity:.25;transform:translate3d(0,8px,0) scale(.993)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
+@keyframes ph-notice-in{from{opacity:0;transform:translate3d(0,10px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
+html{scroll-padding-top:80px}
+.animateIn,#portal-view>.portal-hero,#portal-view>.portal-grid,#portal-view>.portal-notice,#portal-view>h1{animation:ph-page-in 360ms var(--ph-ease) both}
+.animateIn .featureCard,.animateIn .panel,#portal-view>.portal-grid>.portal-card,#portal-view>.portal-card,.tile{animation:ph-card-in 380ms var(--ph-ease) both}
+.animateIn .featureCard:nth-child(2),.animateIn .panel:nth-child(2),#portal-view>.portal-grid>.portal-card:nth-child(2),.tile:nth-child(2){animation-delay:45ms}
+.animateIn .featureCard:nth-child(3),.animateIn .panel:nth-child(3),#portal-view>.portal-grid>.portal-card:nth-child(3),.tile:nth-child(3){animation-delay:85ms}
+button,.btn,.portal-btn,.portal-pill,.choice,.lessonRow,.nav button,.portal-side nav a,.side nav button,.tile a{
+ transition:transform var(--ph-fast) var(--ph-ease),background-color var(--ph-fast) ease,border-color var(--ph-fast) ease,color var(--ph-fast) ease,box-shadow var(--ph-medium) ease,filter var(--ph-fast) ease;
+}
+@media(hover:hover){
+ button:not(:disabled):hover,.btn:hover,.portal-btn:hover,.portal-pill:hover,.tile a:hover{transform:translate3d(0,-2px,0)}
+ .portal-card:hover,.panel:hover,.featureCard:hover,.tile:hover{border-color:var(--accent,#91d69a);box-shadow:0 12px 34px rgba(0,0,0,.14)}
+}
+button:not(:disabled):active,.btn:active,.portal-btn:active,.portal-pill:active{transform:scale(.985)}
+.portal-card,.panel,.featureCard,.tile{transition:border-color var(--ph-medium) ease,box-shadow var(--ph-medium) ease,transform var(--ph-medium) var(--ph-ease)}
+.toast:not([hidden]),.portal-toast:not([hidden]){animation:ph-notice-in 220ms var(--ph-ease) both}
+input,textarea,select{transition:border-color var(--ph-fast) ease,box-shadow var(--ph-fast) ease}
+input:focus-visible,textarea:focus-visible,select:focus-visible{box-shadow:0 0 0 3px rgba(145,214,154,.2)}
+:focus-visible{outline-offset:3px}
+.skip-link{position:fixed;z-index:1000;left:12px;top:-100px;padding:11px 16px;border-radius:10px;background:#e5f5e6;color:#0b1210;font-weight:800}
+.skip-link:focus{top:12px}
+@media(max-width:620px){
+ html{scroll-padding-top:95px}
+ .animateIn .panel,.animateIn .featureCard,#portal-view>.portal-grid>.portal-card{animation-delay:0ms}
+ .portal-header-actions .portal-pill{padding:8px 9px}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto!important}
+ *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+html.reduce-motion,html.reduce-motion *,html.reduce-motion *::before,html.reduce-motion *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
