@@ -35,7 +35,7 @@ With Node.js 18 or newer:
 npm test
 ```
 
-The repository includes tests for hand rankings, the ace-low straight, choosing the best five cards from seven, betting rounds, folding, all-in, and equity simulation. GitHub Actions is configured to run these tests on pushes and pull requests. Automated tests do not replace manual browser testing.
+The repository includes automated server smoke checks and tests for hand rankings, the ace-low straight, choosing the best five cards from seven, betting rounds, folding, all-in, and equity simulation. GitHub Actions is configured to run these tests on pushes and pull requests. Automated tests do not replace manual browser testing.
 
 ## Important limitations
 
@@ -52,13 +52,13 @@ The computer opponent is intentionally simple, and betting logic is simplified c
 
 Progress is stored in browser `localStorage`. Download a JSON backup from **Profile** before clearing browser data or switching devices. The app is educational and uses play chips only.
 
-## Online multiplayer (two-player beta)
+## Online multiplayer (2–6 player beta)
 
-PokerHub now includes `multiplayer.html` and a Node.js WebSocket server in `server.cjs`. The server creates six-character private room codes, deals hidden cards separately to each player, validates turns and actions, advances the board, compares showdown hands, and distributes fictional chips. It supports reconnection in the same browser session while the server remains running.
+PokerHub now includes `multiplayer.html` and a Node.js WebSocket server in `server.cjs`. The server creates six-character private room codes for 2–6 players, deals hidden cards separately, validates turns and actions, advances the board, compares showdown hands, and distributes fictional chips. The room host starts hands. Supported game choices: Texas Hold’em, four-card Omaha, and five-card Omaha; Omaha showdowns require exactly two hole cards and three board cards. See `variants.html` for additional learning-only poker formats. It supports reconnection in the same browser session while the server remains running.
 
 ### Start locally or in StackBlitz
 
-Run `npm install` then `npm start`. Visit `http://localhost:3000/multiplayer.html` in two browser tabs or devices connected to the running server. The preview's WebSocket endpoint is `/ws`.
+Run `npm install` then `npm start`. Visit `http://localhost:3000/multiplayer.html` in separate browser tabs or devices connected to the running server. The preview's WebSocket endpoint is `/ws`.
 
 ### Deploy online
 
@@ -75,3 +75,7 @@ Open `portal.html` for the new responsive Player Center. It adds a dashboard, lo
 ### Preview
 
 With Node.js installed, run `npm install && npm start`, then open `http://localhost:3000/portal.html`. Static GitHub Pages can display Player Center, but not run the multiplayer WebSocket server.
+
+### Multiplayer beta restrictions
+
+Live rooms currently use fixed +20 raises (including Omaha), not complete pot-limit betting. All-in and side-pot rules are not yet supported; practice stacks reset to 1,000 virtual chips each hand. Rooms are ephemeral, and a restart clears them. There is no secure account system or production matchmaking. A Render deployment is separate from GitHub code changes: check the dashboard to confirm the newest commit actually deployed.
