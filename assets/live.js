@@ -35,7 +35,7 @@
   ws.onclose=()=>{if(!disposed)status('Disconnected from the live server. Rejoin the room to reconnect.')};
   ws.onmessage=event=>{
    let m;try{m=JSON.parse(event.data)}catch{return}
-   if(m.type==='error'){status(String(m.message||'The server declined the request.'));return}
+   if(m.type==='error'){if(m.message==='Room not found'){setSession('ph-room','');setSession('ph-token','')}status(String(m.message||'The server declined the request.'));return}
    if(m.type==='joined'){
     room=m.room;token=m.token;setSession('ph-room',room);setSession('ph-token',token);
     status('Joined room '+room+'. Share the code and invite your friends.');
@@ -100,7 +100,7 @@
   find('ph-live-leave').onclick=()=>{if(latest?.game?.status==='playing'&&!confirm('Leaving during a hand will fold your cards. Leave this room?'))return;leave()};
   find('ph-live-guide').onclick=()=>{if(window.App?.go)window.App.go('variants')};
   if(latest&&ws?.readyState===1&&room){find('ph-live-lobby').hidden=true;find('ph-live-room').hidden=false;paint()}
-  else{const savedRoom=getSession('ph-room'),savedToken=getSession('ph-token');if(savedRoom&&savedToken&&/^[0-9A-F]{6}$/.test(savedRoom))connect({type:'join',room:savedRoom,token:savedToken,name:playerName})}
+  else{const savedRoom=getSession('ph-room'),savedToken=getSession('ph-token');if(savedRoom&&savedToken&&(!requested||requested.toUpperCase()===savedRoom)&&/^[0-9A-F]{6}$/.test(savedRoom))connect({type:'join',room:savedRoom,token:savedToken,name:playerName})}
  }
  function leave(){
   disposed=true;if(ws){ws.onclose=null;try{ws.close()}catch{}}ws=null;room=null;token=null;latest=null;pending=null;
