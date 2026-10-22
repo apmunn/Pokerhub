@@ -153,5 +153,7 @@ function equity(hero,board,trials){
  }
  return {wins,ties,losses,trials:count,equity:(wins+ties/2)/count};
 }
-window.PH_GAME={Table,R,S,FULL,CATS,evaluate,compare,scoreFive,equity,estimateStrength,shuffle};
+const api={Table,R,S,FULL,CATS,evaluate,compare,scoreFive,equity,estimateStrength,shuffle};
+if(typeof module!=='undefined'&&module.exports)module.exports=api;
+if(typeof window!=='undefined')window.PH_GAME=api;
 })();
