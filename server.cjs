@@ -18,7 +18,7 @@ function broadcast(r){r.players.forEach((p,i)=>{if(p)send(p.ws,state(r,i))})}
 function start(r){
  if(r.players.some(p=>!p))return;
  const deck=shuffle(FULL),hands=[deck.splice(0,2),deck.splice(0,2)];
- r.players.forEach(p=>p.stack=1000);
+ r.players.forEach((p,i)=>p.stack=1000-(i===0?10:20));
  r.game={deck,hands,board:[],pot:30,phase:0,turn:0,bet:20,put:[10,20],status:'playing',message:'New hand: player 1 acts first.',winner:null,acted:[false,false]};
  broadcast(r);
 }
