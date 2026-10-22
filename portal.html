@@ -1,7 +1,12 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1210"><meta name="description" content="PokerHub 3.0: free virtual-chip poker, learning, and your personal player dashboard."><title>PokerHub 3.0 · Player Center</title><link rel="icon" href="assets/icon.svg"><link rel="stylesheet" href="assets/styles.css">
-  <link rel="stylesheet" href="assets/motion.css"><link rel="stylesheet" href="assets/portal.css"><script src="assets/data.js" defer></script><script src="assets/portal.js" defer></script></head>
-<body><a class="skip" href="#portal-main">Skip to content</a><div class="portal-shell">
-<aside class="portal-side"><a class="portal-brand" href="index.html"><span>♠</span> PokerHub <small>3.0</small></a><p class="muted tiny">YOUR PLAYER CENTER</p><nav aria-label="Player center"><a href="#overview" data-section="overview">◈ Overview</a><a href="#account" data-section="account">◉ Profile</a><a href="#friends" data-section="friends">♧ Friends & Clubs</a><a href="#ranking" data-section="ranking">★ Rankings</a><a href="#notifications" data-section="notifications">♢ Notifications</a><a href="#settings" data-section="settings">⚙ Settings</a><a href="#help" data-section="help">? Help & Safety</a></nav><div class="portal-sidefoot"><span class="status-dot"></span> Local demo mode<br><small>Nothing here is a live online account.</small></div></aside>
-<div class="portal-body"><header class="portal-header"><button class="mobile-menu" id="menu" aria-label="Toggle menu" aria-expanded="false">☰</button><span class="muted">PLAY • LEARN • CONNECT</span><div class="portal-header-actions"><a class="portal-pill" href="multiplayer.html">♠ Live rooms</a><button class="portal-pill" id="notification-shortcut" aria-label="Notifications">♢ <span id="unread-count">0</span></button><span id="header-avatar" class="portal-avatar">P</span></div></header><main id="portal-main" tabindex="-1"><div id="portal-view" aria-live="polite"></div></main><footer class="portal-footer">PokerHub is for education and free virtual chips only. No cash prizes or purchases. <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="#help">Help</a></footer></div>
-</div><div class="portal-toast" id="portal-toast" role="status" aria-live="polite" hidden></div></body></html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1210"><title>Player Center · PokerHub</title>
+<link rel="icon" href="assets/icon.svg"><link rel="stylesheet" href="assets/styles.css"><link rel="stylesheet" href="assets/motion.css">
+<meta name="robots" content="noindex,follow"></head>
+<body><main class="main" style="max-width:750px;margin:9vh auto;min-height:65vh">
+<section class="hero"><div class="eyebrow">♠ ONE CONNECTED POKERHUB</div><h1>Player Center</h1>
+<p>This page has moved into the main PokerHub dashboard. Your existing links still work.</p>
+<div class="actions"><a class="btn" href="index.html#profile">Open Player Center →</a></div></section>
+</main><script>const map={overview:'home',account:'profile',friends:'community',ranking:'ranked',notifications:'notifications',settings:'settings',help:'home'};
+const dest=map[location.hash.slice(1)]||'profile';
+location.replace('index.html#'+dest);</script></body></html>
