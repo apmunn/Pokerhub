@@ -3,8 +3,52 @@
 const D=window.PH_DATA,G=window.PH_GAME,$=s=>document.querySelector(s);
 const KEY='pokerhub-v2',OLD='pokerhub-local-v1';
 const defaults=()=>({name:'Player',theme:'green',wallet:2500,xp:0,completed:[],daily:[],handsPlayed:0,wins:0,losses:0,ties:0,currentStreak:0,bestStreak:0,handCounter:0,achievements:[],history:[],savedTopics:[],partners:[],clubs:[],tour:{status:'idle',round:0},activeGame:null});
+
+function bounded(v,max,fallback=0){const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(max,Math.floor(n))):fallback}
+function normalize(raw){
+ const d=defaults();if(!raw||typeof raw!=='object'||Array.isArray(raw))return d;
+ const state={...d};
+ state.name=typeof raw.name==='string'?(raw.name.trim().slice(0,25)||'Player'):'Player';
+ state.theme=['green','purple','blue','amber'].includes(raw.theme)?raw.theme:'green';
+ state.wallet=bounded(raw.wallet,100000000,2500);state.xp=bounded(raw.xp,100000000);
+ for(const k of ['handsPlayed','wins','losses','ties','currentStreak','bestStreak','handCounter'])state[k]=bounded(raw[k],10000000);
+ const unique=(items,fn,max)=>[...new Set((Array.isArray(items)?items:[]).slice(0,max*3).filter(fn))].slice(0,max);
+ state.completed=unique(raw.completed,x=>Number.isInteger(x)&&x>=0&&x<D.lessons.length,D.lessons.length);
+ state.daily=unique(raw.daily,x=>typeof x==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(x),400);
+ const validAwards=new Set(D.achievements.map(x=>x.id));
+ state.achievements=unique(raw.achievements,x=>typeof x==='string'&&validAwards.has(x),D.achievements.length);
+ state.savedTopics=unique(raw.savedTopics,x=>Number.isInteger(x)&&x>=0&&x<D.topics.length,D.topics.length);
+ for(const [k,max,size] of [['partners',30,30],['clubs',15,40]]){
+  state[k]=unique((Array.isArray(raw[k])?raw[k]:[]).map(x=>typeof x==='string'?x.trim().slice(0,size):''),x=>x.length>0,max)
+ }
+ state.history=(Array.isArray(raw.history)?raw.history:[]).slice(0,45).filter(h=>h&&typeof h==='object'&&Array.isArray(h.hero)&&Array.isArray(h.bot)).map((h,i)=>({
+  id:String(h.id||'restored-'+i).slice(0,80),date:String(h.date||'Unknown date').slice(0,80),
+  mode:h.mode==='tournament'?'tournament':'practice',result:['win','loss','tie'].includes(h.result)?h.result:'tie',
+  hero:h.hero.filter(c=>typeof c==='string'&&G.FULL.includes(c)).slice(0,2),
+  bot:h.bot.filter(c=>typeof c==='string'&&G.FULL.includes(c)).slice(0,2),
+  board:(Array.isArray(h.board)?h.board:[]).filter(c=>typeof c==='string'&&G.FULL.includes(c)).slice(0,5),
+  pot:bounded(h.pot,1000000),why:String(h.why||'').slice(0,35)
+ }));
+ const t=raw.tour;
+ if(t&&typeof t==='object'&&!Array.isArray(t)){state.tour={status:['idle','playing','between','champion','eliminated'].includes(t.status)?t.status:'idle',round:bounded(t.round,3)}}
+ const g=raw.activeGame;
+ if(g&&typeof g==='object'&&['playing','finished'].includes(g.status)&&
+ Array.isArray(g.hero)&&g.hero.length===2&&Array.isArray(g.bot)&&g.bot.length===2&&
+ Array.isArray(g.board)&&g.board.length<=5&&Array.isArray(g.deck)&&Array.isArray(g.log)&&
+ [...g.hero,...g.bot,...g.board,...g.deck].every(c=>G.FULL.includes(c))&&
+ new Set([...g.hero,...g.bot,...g.board,...g.deck]).size===g.hero.length+g.bot.length+g.board.length+g.deck.length&&
+ ['hero','bot',null].includes(g.turn)&&['practice','tournament'].includes(g.mode)&&
+ Number.isInteger(g.phase)&&g.phase>=0&&g.phase<=3&&
+ ['heroStack','botStack','heroPut','botPut','currentBet','minRaise','pot','buyIn','handNo'].every(k=>Number.isSafeInteger(g[k])&&g[k]>=0&&g[k]<=100000000)&&
+ g.acted&&typeof g.acted.hero==='boolean'&&typeof g.acted.bot==='boolean'){
+  state.activeGame={...g,log:g.log.slice(0,60).map(x=>String(x).slice(0,220))}
+ }
+ if(state.tour.status==='playing'&&!state.activeGame)state.tour.status='idle';
+ return state
+}
+
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]))}
-function getStore(){let d=defaults();try{let s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s==='object')return {...d,...s,tour:{...d.tour,...(s.tour||{})}};let legacy=JSON.parse(localStorage.getItem(OLD)||'null');if(legacy){d.name=String(legacy.name||'Player').slice(0,25);d.wallet=Number(legacy.chips)||2500;d.xp=Number(legacy.xp)||0;d.wins=Number(legacy.wins)||0;d.handsPlayed=Number(legacy.played)||0;d.completed=(legacy.completed||[]).filter(i=>Number.isInteger(i)&&i>=0&&i<D.lessons.length);return d}}catch(e){}return d}
+function getStore(){let d=defaults();try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s)return normalize(s);const legacy=JSON.parse(localStorage.getItem(OLD)||'null');if(legacy&&typeof legacy==='object'){d.name=String(legacy.name||'Player');d.wallet=Number(legacy.chips)||2500;d.xp=Number(legacy.xp)||0;d.wins=Number(legacy.wins)||0;d.handsPlayed=Number(legacy.played)||0;d.completed=Array.isArray(legacy.completed)?legacy.completed:[];return normalize(d)}}catch{}return d}
 let state=getStore(),page='home',table=null,lessonSelected=0,lessonAnswer=null,topicSelected=0,dailyAnswer=null;
 let lab={hole:[],board:[],focus:'hole',result:null,working:false},calc={pot:80,call:20},toastTimer=null,profileTab='overview';
 const icon={home:'⌂',play:'♠',academy:'▤',challenges:'✧',lab:'◇',coach:'✦',ranked:'★',tournaments:'♛',community:'♧',profile:'◉'};
@@ -32,7 +76,7 @@ function nav(){
  $('#topRank').textContent=rank().name;
  document.body.className=state.theme==='green'?'':'theme-'+(['purple','blue','amber'].includes(state.theme)?state.theme:'green');
 }
-function go(p){if(!items.some(i=>i[0]===p))p='home';page=p;if(location.hash.slice(1)!==p)location.hash=p;render();window.scrollTo({top:0,behavior:'smooth'})}
+function go(p){if(!items.some(i=>i[0]===p))p='home';page=p;if(location.hash.slice(1)!==p)location.hash=p;render();window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})}
 function render(){nav();let views={home,play,academy,challenges,handLab,lab:handLab,coach,ranked,tournaments,community,profile};let v=views[page]||home;$('#content').innerHTML='<div class="animateIn">'+v()+'</div>';document.title=(items.find(i=>i[0]===page)||['','PokerHub'])[1]+' · PokerHub'}
 function home(){
  let next=nextRank(),count=state.completed.length,rate=state.handsPlayed?Math.round(state.wins/state.handsPlayed*100):0;
@@ -186,13 +230,13 @@ function community(){
  '<div class="split"><div class="stack">'+panel('Study partners','<label class="field">Partner nickname<input id="newPartner" maxlength="30" placeholder="Add someone you practice with"></label><div class="actions" style="margin-top:11px">'+button('Add nickname','App.addPartner()')+'</div><div class="divider"></div>'+(state.partners.length?state.partners.map((p,i)=>'<div class="listRow"><span class="row"><span class="avatar">'+esc(p[0].toUpperCase())+'</span><strong>'+esc(p)+'</strong></span>'+button('Remove','App.removePartner('+i+')','ghost sm')+'</div>').join(''):'<div class="empty">Your list is empty. This is a private notebook, not a friend-request system.</div>'))+
  panel('Your study clubs','<label class="field">Study club name<input id="newClub" maxlength="40" placeholder="e.g. Friday Poker Club"></label><div class="actions" style="margin-top:11px">'+button('Create local club','App.addClub()')+'</div><div class="divider"></div>'+(state.clubs.length?state.clubs.map((c,i)=>'<div class="listRow"><div><strong>♧ '+esc(c)+'</strong><p class="muted tiny" style="margin:0">Saved on this device only</p></div>'+button('Remove','App.removeClub('+i+')','ghost sm')+'</div>').join(''):'<div class="empty">No local study clubs yet.</div>'))+'</div>'+
  '<div class="stack">'+panel('Community roadmap','<div class="listRow"><span>✓ Local learning profile</span><span class="tag">Available</span></div><div class="listRow"><span>✓ Personal study lists</span><span class="tag">Available</span></div><div class="listRow"><span>Shared online friend requests</span><span class="tag mutedTag">Needs backend</span></div><div class="listRow"><span>Real-time multiplayer tables</span><span class="tag mutedTag">Needs backend</span></div><div class="listRow"><span>Online club messaging</span><span class="tag mutedTag">Needs backend</span></div><div class="listRow"><span>Global leaderboards</span><span class="tag mutedTag">Needs backend</span></div>')+
- panel('Share PokerHub','<p class="muted small">Once you publish this repository using GitHub Pages, you can share the website link with friends. Each visitor’s progress will stay in their own browser.</p>'+button('Copy expected site address','App.copyLink()','secondary'))+'</div></div>';
+ panel('Share PokerHub','<p class="muted small">Share the educational site address from the current host. Each visitor’s learning progress is stored in their own browser.</p>'+button('Copy current website address','App.copyLink()','secondary'))+'</div></div>';
 }
 function addPartner(){const e=$('#newPartner'),name=e.value.trim().slice(0,30);if(!name){toast('Enter a nickname.');return}if(state.partners.length>=30){toast('Maximum 30 local partners.');return}if(!state.partners.includes(name))state.partners.push(name);save();render();toast('Nickname saved locally')}
 function removePartner(i){state.partners.splice(i,1);save();render()}
 function addClub(){const e=$('#newClub'),name=e.value.trim().slice(0,40);if(!name){toast('Enter a club name.');return}if(state.clubs.length>=15){toast('Maximum 15 local clubs.');return}if(!state.clubs.includes(name))state.clubs.push(name);save();render();toast('Study club saved locally')}
 function removeClub(i){state.clubs.splice(i,1);save();render()}
-function copyLink(){const url='https://apmunn.github.io/Pokerhub/';if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(url).then(()=>toast('Expected URL copied (once Pages is enabled)'),()=>toast(url));else toast(url)}
+function copyLink(){if(location.protocol==='file:'){toast('Open the published website before copying a public link.');return}const url=new URL('./',location.href).href;if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(url).then(()=>toast('Current site address copied'),()=>toast(url));else toast(url)}
 function profile(){
  const recent=state.history.slice(0,12);
  return lead('PERSONAL PROGRESS','Player Profile','Customize your experience, review practice results, and back up progress saved in this browser.')+
@@ -206,7 +250,7 @@ function refill(){state.wallet+=500;save();render();toast('Added 500 free virtua
 function exportProgress(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='pokerhub-progress-'+dateKey()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Downloaded local progress backup')}
 function importProgress(e){
  const file=e.target.files&&e.target.files[0];if(!file)return;if(file.size>1000000){toast('Backup must be under 1 MB.');return}
- const reader=new FileReader();reader.onload=()=>{try{let obj=JSON.parse(String(reader.result));if(!obj||typeof obj!=='object'||typeof obj.name!=='string'||!Array.isArray(obj.completed)||!Number.isFinite(Number(obj.wallet)))throw Error('Invalid backup');if(table)table.destroy();let d=defaults();state={...d,...obj,name:obj.name.slice(0,25),theme:['green','purple','blue','amber'].includes(obj.theme)?obj.theme:'green',wallet:Math.max(0,Math.min(1e8,Math.floor(obj.wallet))),xp:Math.max(0,Math.min(1e8,Math.floor(Number(obj.xp)||0))),completed:obj.completed.filter(i=>Number.isInteger(i)&&i>=0&&i<D.lessons.length),tour:{...d.tour,...(obj.tour||{})},activeGame:null};state.history=Array.isArray(obj.history)?obj.history.slice(0,45):[];state.achievements=Array.isArray(obj.achievements)?obj.achievements:[];state.partners=Array.isArray(obj.partners)?obj.partners.slice(0,30).map(String):[];state.clubs=Array.isArray(obj.clubs)?obj.clubs.slice(0,15).map(String):[];state.daily=Array.isArray(obj.daily)?obj.daily:[];table=null;save();render();toast('Progress restored from backup')}catch(err){toast('Could not read that PokerHub backup.')}};reader.readAsText(file);
+ const reader=new FileReader();reader.onload=()=>{try{let obj=JSON.parse(String(reader.result));if(!obj||typeof obj!=='object'||Array.isArray(obj)||typeof obj.name!=='string'||!Array.isArray(obj.completed))throw Error('Invalid backup');if(table)table.destroy();state=normalize(obj);state.activeGame=null;if(state.tour.status==='playing')state.tour.status='idle';table=null;save();render();toast('Progress restored from backup')}catch(err){toast('Could not read that PokerHub backup.')}};reader.readAsText(file);
 }
 function resetProgress(){if(!confirm('Permanently reset all PokerHub progress stored in this browser?'))return;if(table)table.destroy();state=defaults();table=null;lessonAnswer=null;dailyAnswer=null;save();go('home');toast('Local progress reset')}
 const API={go,startPractice,startTour,nextTour,gameAct,openLesson,answerLesson,answerDaily,retryDaily,labFocus,labClear,labPick,labEstimate,chooseTopic,calcOdds,addPartner,removePartner,addClub,removeClub,copyLink,saveProfile,refill,exportProgress,importProgress,resetProgress};
