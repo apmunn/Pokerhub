@@ -1,5 +1,5 @@
-const CACHE='pokerhub-static-v7';
-const ASSETS=['./','./index.html','./multiplayer.html','./variants.html','./portal.html','./offline.html','./privacy.html','./terms.html','./404.html','./assets/styles.css','./assets/motion.css','./assets/portal.css','./assets/data.js','./assets/game.js','./assets/app.js','./assets/portal.js','./assets/icon.svg','./manifest.webmanifest'];
+const CACHE='pokerhub-static-v8';
+const ASSETS=['./','./index.html','./multiplayer.html','./variants.html','./portal.html','./offline.html','./privacy.html','./terms.html','./404.html','./assets/styles.css','./assets/motion.css','./assets/unified.css','./assets/live.js','./assets/portal.css','./assets/data.js','./assets/game.js','./assets/app.js','./assets/portal.js','./assets/icon.svg','./manifest.webmanifest'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
 });
