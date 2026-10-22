@@ -1,17 +1,18 @@
 {
   "name": "pokerhub",
-  "version": "2.0.0",
+  "version": "3.1.0",
   "private": true,
-  "description": "Educational, play-money Texas Hold'em practice website",
+  "description": "Educational poker practice with free virtual chips, lessons and multiplayer beta",
   "scripts": {
     "dev": "node server.cjs",
     "start": "node server.cjs",
-    "test": "node --test tests/*.test.cjs"
+    "test": "node --test tests/*.test.cjs",
+    "check": "node --check server.cjs && node --check assets/game.js && node --check assets/app.js && node --check assets/portal.js && node --check assets/data.js && node --check sw.js && npm test"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24 <25"
   },
   "dependencies": {
-    "ws": "^8.18.3"
+    "ws": "^8.22.0"
   }
 }
