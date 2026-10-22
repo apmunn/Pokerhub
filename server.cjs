@@ -6,6 +6,7 @@ const root=__dirname,rooms=new Map(),MAX=6,VARIANTS={holdem:{name:'Texas Hold’
 const server=http.createServer((req,res)=>{
  let p;try{p=decodeURIComponent(new URL(req.url,'http://localhost').pathname)}catch{return res.writeHead(400).end()}
  if(p==='/health')return res.writeHead(200,{'Content-Type':'application/json'}).end(JSON.stringify({ok:true,rooms:rooms.size}));
+ if(p.startsWith('/.')||p.includes('/.')||/\.(?:cjs|map|md|yml|yaml|lock)$/i.test(p)||p==='/package.json'||p==='/render.yaml'||p.startsWith('/tests/'))return res.writeHead(404).end('Not found');
  const file=path.resolve(root,'.'+(p==='/'?'/index.html':p));
  if(!file.startsWith(root+path.sep))return res.writeHead(403).end();
  fs.stat(file,(err,st)=>{if(err||!st.isFile())return res.writeHead(404).end('Not found');res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'});fs.createReadStream(file).pipe(res)});
@@ -45,7 +46,7 @@ wss.on('connection',ws=>{
  else if(m.type==='start'||m.type==='next'){const r=rooms.get(ws.room);if(!r||r.players[ws.seat]?.ws!==ws)return;if(ws.seat!==0)return send(ws,{type:'error',message:'Only the room host can start hands.'});const error=start(r);if(error)send(ws,{type:'error',message:error})}
  else if(m.type==='act'){const r=rooms.get(ws.room);if(!r||r.players[ws.seat]?.ws!==ws)return;const error=act(r,ws.seat,m.action);if(error)send(ws,{type:'error',message:error})}
  });
- ws.on('close',()=>{const r=rooms.get(ws.room);if(r&&r.players[ws.seat]?.ws===ws){r.players[ws.seat].ws=null;if(r.game?.status==='playing'&&!r.game.folded[ws.seat]){const g=r.game;if(g.turn===ws.seat)act(r,ws.seat,'fold');else{g.folded[ws.seat]=true;g.acted[ws.seat]=true;if(g.folded.filter(v=>!v).length===1)payout(r,[g.folded.findIndex(v=>!v)],'Remaining player wins after disconnect.')}}broadcast(r)}});
+ ws.on('close',()=>{const r=rooms.get(ws.room);if(r&&r.players[ws.seat]?.ws===ws){r.players[ws.seat].ws=null;if(r.game?.status==='playing'&&!r.game.folded[ws.seat]){const g=r.game;if(g.turn===ws.seat)act(r,ws.seat,'fold');else{g.folded[ws.seat]=true;g.acted[ws.seat]=true;if(g.folded.filter(v=>!v).length===1)payout(r,[g.folded.findIndex(v=>!v)],'Remaining player wins after disconnect.');else if(g.acted.every((v,j)=>v||g.folded[j])&&g.put.every((v,j)=>g.folded[j]||v===g.bet))advance(r)}}broadcast(r)}});
 });
 setInterval(()=>{for(const [id,r] of rooms)if(Date.now()-r.created>24*3600*1000||r.players.every(p=>!p.ws))rooms.delete(id)},3600000).unref();
 server.listen(Number(process.env.PORT)||3000,'0.0.0.0',()=>console.log('PokerHub multiplayer listening on '+(process.env.PORT||3000)));
