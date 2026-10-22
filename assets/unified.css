@@ -1,0 +1,72 @@
+/* PokerHub Unified 3.2 — layout and integrated real-time table */
+[hidden]{display:none!important}
+.side{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+.side #navigation>.navLabel:not(:first-child){margin-top:21px}
+.topTitle a{display:inline-block;border-radius:7px;padding:4px 6px;color:var(--accent);letter-spacing:.35px}
+.topTitle a:hover,.topTitle a:focus-visible{background:var(--surface3);text-decoration:none}
+.ph-live-hero{min-height:225px;background:radial-gradient(ellipse at 85% 15%,#4b845f66,transparent 50%),linear-gradient(125deg,#1b3a2b,#0f2219 80%)}
+.ph-live-hero:after{content:'♣';color:#b9f3c41e}
+.ph-live-hero h1{max-width:700px}
+.ph-live-form{display:flex;align-items:flex-end;gap:13px;flex-wrap:wrap}
+.ph-live-form .field{flex:1;min-width:min(180px,100%)}
+.ph-live-form input,.ph-live-form select{width:100%;max-width:100%}
+.ph-live-form .btn{margin-bottom:1px}
+.ph-live-room{padding:clamp(17px,3vw,32px)}
+.ph-live-details{margin:12px 0 18px}
+.ph-live-seats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:14px 0}
+.ph-live-seat{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:14px;display:flex;min-width:0;flex-direction:column;gap:3px;transition:border-color .2s,box-shadow .2s}
+.ph-live-seat strong{overflow-wrap:anywhere}
+.ph-live-seat.is-you{background:var(--surface3)}
+.ph-live-seat.is-turn{border-color:var(--accent);box-shadow:0 0 0 2px #9ceaad22}
+.ph-live-felt{border:9px solid #305c45;box-shadow:inset 0 5px 50px #0004,0 20px 45px #0004;border-radius:110px;min-height:264px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 14px;background:radial-gradient(circle at 40% 25%,#236c45,#134b33 66%,#0e3928)}
+.ph-live-street{text-transform:uppercase;letter-spacing:2.2px;font-size:11px;font-weight:900;color:#dcf5e4}
+.ph-live-cards{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;min-height:85px}
+.ph-live-card{display:grid;place-items:center;width:56px;height:79px;border-radius:9px;border:2px solid #e4e9e5;background:#fafffd;color:#163224;font-size:21px;font-weight:900;box-shadow:0 7px 13px #001c0e44;animation:ph-card-in .32s var(--ph-ease) both}
+.ph-live-card.is-red{color:#bf2735}
+.ph-live-pot{padding:5px 16px;background:#103925a6;border-radius:22px;color:#f8ffe5;font-weight:900;margin:14px 0 9px}
+.ph-live-message{max-width:460px;color:#d3e8d9;min-height:24px;margin:0}
+.ph-live-bottom{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;margin:19px 0 10px}
+.ph-live-bottom>div{background:var(--surface2);padding:19px;border-radius:15px;min-width:0}
+.ph-live-bottom h3{margin:0 0 11px}
+.ph-live-bottom .actions{min-height:80px;align-content:start}
+.ph-live-room #ph-live-room-code{font-variant-numeric:tabular-nums;letter-spacing:3px}
+.ph-live-room .ph-live-pot{font-variant-numeric:tabular-nums}
+.ph-variant-card{display:flex;flex-direction:column;min-height:285px;position:relative;overflow:hidden}
+.ph-variant-card .actions{margin-top:auto}
+.ph-variant-card .muted{max-width:370px}
+.ph-variant-symbol{color:var(--accent);font-size:65px;line-height:1;margin:10px 0}
+.ph-setting-check{margin:16px 0;color:var(--text);font-weight:650;gap:9px}
+.ph-setting-check input{width:19px;height:19px;accent-color:var(--accent);flex:none}
+.ph-profile-avatar{width:52px;height:52px;font-size:25px}
+#settingsBio{width:100%;resize:vertical}
+#ph-live-status{margin-top:10px}
+@media(max-width:1150px){
+ .side{scrollbar-width:none}.side .navLabel{display:none}
+ .side #navigation>.nav+.nav{margin-top:14px}
+ .ph-live-seats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:850px){
+ .ph-variant-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ph-live-bottom{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+ .side{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain}
+ .side #navigation{display:flex;align-items:center;gap:3px;flex:none}
+ .side #navigation .nav{display:flex;align-items:center;flex:none}
+ .side #navigation>.nav+.nav{margin-top:0}
+ .ph-variant-grid{grid-template-columns:1fr}
+ .ph-live-seats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ph-live-felt{border-width:6px;border-radius:52px;padding:22px 8px;min-height:245px}
+ .ph-live-card{width:41px;height:61px;font-size:17px}
+ .ph-live-cards{gap:5px}
+ .ph-live-hero{padding:25px 20px}
+ .ph-live-form .field{min-width:100%}
+ .ph-live-form .btn{width:100%}
+ .ph-live-room{padding:14px}
+ .ph-live-bottom>div{padding:14px}
+ .topTitle a{font-size:11px;padding:3px}
+}
+@media(prefers-reduced-motion:reduce){
+ .ph-live-card{animation:none}
+}
+html.reduce-motion .ph-live-card{animation:none}
