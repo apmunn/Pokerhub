@@ -43,7 +43,7 @@ wss.on('connection',ws=>{
  else if(m.type==='start'||m.type==='next'){const r=rooms.get(ws.room);if(!r||r.players[ws.seat]?.ws!==ws)return;if(ws.seat!==0)return send(ws,{type:'error',message:'Only the room host can start hands.'});const error=start(r);if(error)send(ws,{type:'error',message:error})}
  else if(m.type==='act'){const r=rooms.get(ws.room);if(!r||r.players[ws.seat]?.ws!==ws)return;const error=act(r,ws.seat,m.action);if(error)send(ws,{type:'error',message:error})}
  });
- ws.on('close',()=>{const r=rooms.get(ws.room);if(r&&r.players[ws.seat]?.ws===ws){r.players[ws.seat].ws=null;if(r.game?.status==='playing'&&!r.game.folded[ws.seat])act(r,ws.seat,'fold');broadcast(r)}});
+ ws.on('close',()=>{const r=rooms.get(ws.room);if(r&&r.players[ws.seat]?.ws===ws){r.players[ws.seat].ws=null;if(r.game?.status==='playing'&&!r.game.folded[ws.seat]){const g=r.game;if(g.turn===ws.seat)act(r,ws.seat,'fold');else{g.folded[ws.seat]=true;g.acted[ws.seat]=true;if(g.folded.filter(v=>!v).length===1)payout(r,[g.folded.findIndex(v=>!v)],'Remaining player wins after disconnect.')}}broadcast(r)}});
 });
 setInterval(()=>{for(const [id,r] of rooms)if(Date.now()-r.created>24*3600*1000||r.players.every(p=>!p.ws))rooms.delete(id)},3600000).unref();
 server.listen(Number(process.env.PORT)||3000,'0.0.0.0',()=>console.log('PokerHub multiplayer listening on '+(process.env.PORT||3000)));
