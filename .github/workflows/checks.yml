@@ -12,5 +12,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run game-engine tests
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run engine and multiplayer tests
         run: npm test
