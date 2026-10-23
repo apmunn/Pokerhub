@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#171e1b" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="description" content="BlockForge is a free Minecraft Java and Eaglercraft server toolkit: plugin finder, setup wizard, config generator, crafting recipes, economy planner and world guides." />
+  <title>BlockForge | Minecraft Server Toolkit</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#app">Skip to main content</a>
+  <div class="shell">
+    <aside class="sidebar" id="sidebar" aria-label="Site sidebar">
+      <button type="button" class="sidebar-close" id="menu-close" aria-label="Close navigation">× Close</button>
+      <a href="#home" class="brand" aria-label="BlockForge home"><span class="brand-mark">▦</span><span><strong>BLOCK<span class="brand-green">FORGE</span></strong><small>SERVER TOOLKIT</small></span></a>
+      <div class="side-caption">YOUR WORKSPACE</div>
+      <nav id="main-nav" aria-label="Main navigation">
+        <a href="#home" data-route="home"><span>⌂</span> Overview</a>
+        <a href="#wizard" data-route="wizard"><span>◇</span> Setup wizard</a>
+        <a href="#plugins" data-route="plugins"><span>▧</span> Plugin library</a>
+        <a href="#economy" data-route="economy"><span>◈</span> Economy planner</a>
+        <a href="#leaderboards" data-route="leaderboards"><span>▥</span> Leaderboards</a>
+        <a href="#crafting" data-route="crafting"><span>⊞</span> Crafting guide</a>
+        <a href="#worlds" data-route="worlds"><span>◉</span> Worlds & maps</a>
+        <a href="#configs" data-route="configs"><span>⌘</span> Config generator</a>
+      </nav>
+      <div class="side-bottom"><div class="side-status"><i></i> FREE BROWSER TOOLS</div><p>Made for Java servers<br>and Eaglercraft communities</p></div>
+    </aside>
+    <div class="nav-backdrop" id="nav-backdrop" hidden aria-hidden="true"></div>
+    <div class="main-wrap">
+      <header class="topbar">
+        <button class="mobile-menu" id="menu-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <div class="breadcrumb">WORKSPACE <span>/</span> <strong id="breadcrumb-page">Overview</strong></div>
+        <div class="top-right">
+          <span class="browser-label"><span class="status-dot" aria-hidden="true"></span> Free browser tools</span>
+          <details class="comfort-menu" id="comfort-menu">
+            <summary aria-label="Open display and accessibility settings">☼ <span>Comfort settings</span></summary>
+            <div class="comfort-panel">
+              <strong>Make it yours</strong>
+              <p>Choose what feels easier to read. Saved on this device.</p>
+              <button type="button" id="theme-toggle" class="setting-button" aria-pressed="false">☀ Light theme <span class="setting-value" id="theme-value">Off</span></button>
+              <button type="button" id="text-toggle" class="setting-button" aria-pressed="false">A+ Larger text <span class="setting-value" id="text-value">Off</span></button>
+              <button type="button" id="contrast-toggle" class="setting-button" aria-pressed="false">◐ High contrast <span class="setting-value" id="contrast-value">Off</span></button>
+              <button type="button" id="motion-toggle" class="setting-button" aria-pressed="false">◌ Reduce motion <span class="setting-value" id="motion-value">Off</span></button>
+            </div>
+          </details>
+        </div>
+      </header>
+      <main id="app" tabindex="-1" aria-label="BlockForge tools"></main>
+      <footer>BlockForge is an independent community toolkit. Not affiliated with Mojang, Microsoft, or Eaglercraft projects. <span>Built for free static hosting.</span></footer>
+    </div>
+  </div>
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="page-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
