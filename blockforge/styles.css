@@ -215,3 +215,107 @@ html[data-contrast="high"] .section-caption,html[data-contrast="high"] .eyebrow,
 html[data-contrast="high"][data-theme="light"] .section-caption,html[data-contrast="high"][data-theme="light"] .eyebrow{color:#155a35}
 html[data-contrast="high"][data-theme="light"] .card,html[data-contrast="high"][data-theme="light"] .notice,html[data-contrast="high"][data-theme="light"] .code-panel{border-color:#4b7353}
 html[data-contrast="high"][data-theme="cozy"] .card,html[data-contrast="high"][data-theme="cozy"] .notice,html[data-contrast="high"][data-theme="cozy"] .code-panel{border-color:#c0e9c8}
+
+/* Zaverith workspace, dashboards, and marketplace */
+.sidebar .nav-group{margin:19px 12px 7px;padding:12px 0 0;border-top:1px solid var(--line)}
+.sidebar nav{gap:3px}
+.sidebar nav a{min-height:43px}
+.sidebar .nav-soon{margin-left:auto;font-size:9px;letter-spacing:.07em;border:1px solid var(--line);border-radius:6px;padding:3px 5px;color:var(--muted)}
+.brand-mark{font-family:'Space Grotesk',system-ui,sans-serif;font-size:26px}
+.z-welcome{position:relative;overflow:hidden;padding:clamp(28px,4vw,52px);border:1px solid #607966;border-radius:26px;background:radial-gradient(circle at 92% 12%,#7568a344,transparent 39%),linear-gradient(120deg,#273d32,#222c2b 80%)}
+.z-welcome::after{content:'Z';position:absolute;right:4%;top:1%;font:800 clamp(130px,18vw,250px)/1 'Space Grotesk',sans-serif;color:#ffffff0c;pointer-events:none}
+.z-welcome h1{font-size:clamp(32px,4vw,56px);max-width:760px;line-height:1.12;position:relative;z-index:1}
+.z-welcome h1 em{font-style:normal;color:#d0f0c6}
+.z-welcome p{font-size:1.05rem;color:#e0eae2;max-width:630px;position:relative;z-index:1}
+.z-welcome .actions{position:relative;z-index:1}
+.z-trustline{margin-top:25px;color:#d2e2d8;font-size:.84rem;position:relative;z-index:1}
+.z-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0 32px}
+.z-stat{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:21px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.z-stat span{font-size:.9rem;color:var(--muted);font-weight:700}
+.z-stat strong{font:700 clamp(22px,2.7vw,34px)/1.2 'Space Grotesk',sans-serif;color:var(--text);overflow-wrap:anywhere}
+.z-stat small{font-size:.79rem;color:var(--muted)}
+.z-stat .z-status-text{font-size:1.2rem;color:var(--orange)}
+.z-empty{padding:36px 24px;border:1px dashed var(--line);border-radius:20px;text-align:center;background:var(--panel);margin:16px 0}
+.z-empty h3{margin:8px 0}
+.z-empty p{max-width:540px;margin:0 auto 20px}
+.z-empty-icon{font-size:36px;color:var(--green)}
+.z-server-card{display:flex;flex-direction:column;min-height:260px}
+.z-server-card h3{margin:18px 0 4px;overflow-wrap:anywhere}
+.z-card-top,.z-card-bottom,.z-product-top,.z-product-bottom,.z-widget-title,.z-section-actions{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.z-server-glyph{font-size:23px;display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:var(--panel2);border:1px solid var(--line);color:var(--green)}
+.z-mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere}
+.z-meta{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;color:var(--muted);font-size:.8rem}
+.z-meta span{padding:5px 9px;border:1px solid var(--line);border-radius:8px}
+.z-progress{width:100%;height:8px;border-radius:20px;background:var(--panel2);overflow:hidden;margin:12px 0}
+.z-progress>div{height:100%;border-radius:20px;background:linear-gradient(90deg,#79cfa3,#c4e9b1);transition:width .2s}
+.z-card-bottom{margin-top:auto;align-items:end;flex-wrap:wrap}
+.z-section-actions{margin:20px 0;flex-wrap:wrap}
+.z-actions-right{display:flex;gap:9px;flex-wrap:wrap}
+.z-panel{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:20px;margin:20px 0}
+.z-panel>summary{cursor:pointer;font-size:1.06rem;font-weight:800;color:var(--text);min-height:28px}
+.z-panel[open]>summary{margin-bottom:20px}
+.z-form .form-grid{gap:16px}
+.z-form .field{min-width:0}
+.z-form .field input,.z-form .field select,.z-form .field textarea{width:100%}
+.z-danger{border-color:#ae7275;color:#ffcdcd}
+.z-dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:20px 0}
+.z-widget{min-width:0}
+.z-widget-title{margin-bottom:14px;flex-wrap:wrap}
+.z-widget-title h3{margin:0}
+.z-info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.z-info-grid>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+.z-info-grid small{font-size:.8rem;color:var(--muted)}
+.z-info-grid strong{font-size:.96rem;overflow-wrap:anywhere}
+.z-checks{display:grid;gap:8px;margin-top:14px}
+.z-checks label,.z-widget-toggles label{display:flex;align-items:flex-start;gap:11px;padding:9px;border-radius:10px;cursor:pointer;color:var(--text)}
+.z-checks label:hover,.z-widget-toggles label:hover{background:var(--panel2)}
+.z-checks input,.z-widget-toggles input{flex:0 0 auto;width:19px;height:19px;margin-top:2px;accent-color:#77b88c}
+.z-widget-toggles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.z-tool-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.z-tool-links a{border:1px solid var(--line);border-radius:12px;background:var(--panel2);padding:12px;font-weight:700}
+.z-tool-links a:hover{border-color:var(--green)}
+.z-text-link{display:inline-block;color:var(--green);text-decoration:underline;text-underline-offset:3px;font-weight:700}
+.z-notes{white-space:normal;overflow-wrap:anywhere}
+.z-market-hero{display:flex;justify-content:space-between;gap:24px;align-items:center;padding:27px 32px;border-radius:21px;background:linear-gradient(110deg,#312a3e,#27372f);border:1px solid #665979;margin:20px 0}
+.z-market-hero h2{color:#f8f4ff;margin-top:14px}
+.z-market-hero p{color:#e3dfe9}
+.z-market-symbol{font-size:90px;line-height:1;color:#c5b4e7;opacity:.8}
+.z-product{display:flex;flex-direction:column;min-height:335px}
+.z-product-icon{display:grid;place-items:center;width:50px;height:50px;border-radius:13px;background:#4b405b;color:#e6d4ff;font-size:26px;margin-bottom:12px}
+.z-product-top{justify-content:flex-start;flex-wrap:wrap}
+.z-product h3{margin-top:17px}
+.z-includes{font-size:.85rem;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.z-product-bottom{margin-top:auto;padding-top:15px}
+.z-product-bottom strong{font-size:1.3rem;color:var(--text)}
+.z-product-bottom strong small{font-size:.75rem;color:var(--muted);font-weight:500}
+.z-freebie{margin-top:26px}
+.z-freebie h3{margin:0}
+.z-bottom-note{margin:22px 0;color:var(--muted);font-size:.85rem}
+.z-section-actions select{max-width:200px}
+html[data-theme="light"] .z-welcome{background:radial-gradient(circle at 90% 10%,#dcd5eb,transparent 40%),linear-gradient(110deg,#e7f0e5,#f7f4ed);border-color:#a7bca6}
+html[data-theme="light"] .z-welcome h1,html[data-theme="light"] .z-welcome p{color:#253e2c}
+html[data-theme="light"] .z-welcome h1 em{color:#286447}
+html[data-theme="light"] .z-trustline{color:#4c6652}
+html[data-theme="light"] .z-stat,html[data-theme="light"] .z-empty,html[data-theme="light"] .z-panel{background:#fffdf7;border-color:#b8cbb9}
+html[data-theme="light"] .z-server-glyph,html[data-theme="light"] .z-tool-links a,html[data-theme="light"] .z-meta span{background:#edf4eb;border-color:#a8c0ac}
+html[data-theme="light"] .z-market-hero{background:linear-gradient(110deg,#e7e0f2,#e5efe5);border-color:#b4a7cb}
+html[data-theme="light"] .z-market-hero h2,html[data-theme="light"] .z-market-hero p{color:#333344}
+html[data-theme="light"] .z-market-symbol{color:#74658f}
+html[data-theme="light"] .z-product-icon{background:#eee5f4;color:#6c5484}
+html[data-theme="light"] .z-danger{color:#963c42}
+@media(max-width:1180px){.z-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:860px){.z-dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:780px){
+  .z-welcome{padding:29px 22px}
+  .z-welcome::after{font-size:125px;right:-6%;top:8%}
+  .z-stat-grid{gap:10px}
+  .z-stat{padding:17px}
+  .z-stat strong{font-size:23px}
+  .z-info-grid,.z-widget-toggles{grid-template-columns:1fr}
+  .z-market-hero{padding:22px}
+  .z-market-symbol{font-size:48px}
+  .z-card-bottom{align-items:center}
+  .z-section-actions{align-items:flex-start}
+}
+@media(max-width:420px){.z-stat-grid{grid-template-columns:1fr 1fr}.z-stat strong{font-size:20px}.z-product-bottom{flex-wrap:wrap}.z-tool-links{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.z-progress>div{transition:none}}
